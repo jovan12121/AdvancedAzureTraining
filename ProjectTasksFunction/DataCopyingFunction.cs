@@ -4,6 +4,7 @@ using System.Net;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.Functions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using ProjectTasksFunction.Model;
@@ -25,6 +26,7 @@ namespace ProjectTasksFunction
         {
             _logger = loggerFactory.CreateLogger<DataCopyingFunction>();
         }
+
         private List<Project> ReadAllProjectsFromSqlServer()
         {
             List<Project> projects = new List<Project>();
@@ -68,6 +70,7 @@ namespace ProjectTasksFunction
                                     TaskName = taskReader.GetString(taskReader.GetOrdinal("TaskName")),
                                     TaskDescription = taskReader.GetString(taskReader.GetOrdinal("TaskDescription"))
                                 };
+                                task.ProjectId = project.Id;
                                 project.Tasks.Add(task);
                             }
                         }
@@ -80,30 +83,47 @@ namespace ProjectTasksFunction
         {
             foreach (var project in projects)
             {
-                project.id = project.Id.ToString();
-                await container.CreateItemAsync(project);
+                try
+                {
+                    project.id = project.Id.ToString();
+                    await container.CreateItemAsync(project);
+                }
+                catch (Exception ex)
+                {
+                    await Console.Out.WriteLineAsync("Item with ID {project.id} already exists.");
+                }
             }
         }
-        [Function("DataCopyingFunction")]
-        public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
-        {
 
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
+
+        [Function("DataCopyingFunction")]
+        public async Task RunAsync([TimerTrigger("0 0 * * * *")] MyInfo myTimer)
+        {
+            _logger.LogInformation("C# Timer trigger function processed a request.");
             try
             {
                 List<Project> projects = ReadAllProjectsFromSqlServer();
                 await CopyDataToCosmosDb(projects);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.LogInformation(ex.Message);
+                _logger.LogError(ex, "An error occurred while copying data to Cosmos DB.");
             }
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+        }
+        public class MyInfo
+        {
+            public MyScheduleStatus ScheduleStatus { get; set; }
 
-            response.WriteString("Welcome to Azure Functions!");
+            public bool IsPastDue { get; set; }
+        }
 
-            return response;
+        public class MyScheduleStatus
+        {
+            public DateTime Last { get; set; }
+
+            public DateTime Next { get; set; }
+
+            public DateTime LastUpdated { get; set; }
         }
     }
 }
