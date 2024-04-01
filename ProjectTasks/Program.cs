@@ -1,3 +1,5 @@
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.EntityFrameworkCore;
 using ProjectTasks.Infrastracture;
 using ProjectTasks.Interfaces;
@@ -10,7 +12,13 @@ var builder = WebApplication.CreateBuilder(args);
 IConfiguration config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .Build();
-var connectionString = builder.Configuration.GetConnectionString("ProjectDb");
+//var connectionString = builder.Configuration.GetConnectionString("ProjectDb");
+var keyVaultEndpoint = builder.Configuration.GetSection("KeyVault:BaseUrl").Value;
+var clientId = builder.Configuration.GetSection("AzureAd:ClientId").Value;
+var clientSecret = builder.Configuration.GetSection("AzureAd:ClientSecret").Value;
+var tenantId = builder.Configuration.GetSection("AzureAd:TenantId").Value;
+var secretClient = new SecretClient(new Uri(keyVaultEndpoint), new ClientSecretCredential(tenantId, clientId, clientSecret));
+var connectionString = secretClient.GetSecret("projectDbConnectionString").Value.Value;
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
