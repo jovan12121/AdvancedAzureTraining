@@ -48,6 +48,7 @@ namespace ProjectTasksFunction
                                 Code = projectReader.GetString(projectReader.GetOrdinal("Code")),
                                 Tasks = new List<Task_>()
                             };
+                            project.id = project.Id.ToString();
                             projects.Add(project);
                         }
                     }
@@ -85,19 +86,51 @@ namespace ProjectTasksFunction
             {
                 try
                 {
-                    project.id = project.Id.ToString();
+                    var existingItem = await container.ReadItemAsync<Project>(project.Id.ToString(), new PartitionKey(project.Id));
+                    if (existingItem != null)
+                    {
+                        project.Id = existingItem.Resource.Id; 
+                        await container.ReplaceItemAsync(project, project.Id.ToString(), new PartitionKey(project.Id));
+                    }
+                    else
+                    {
+                        await container.CreateItemAsync(project);
+                    }
+                }
+                catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
                     await container.CreateItemAsync(project);
                 }
                 catch (Exception ex)
                 {
-                    await Console.Out.WriteLineAsync("Item with ID {project.id} already exists.");
+                    _logger.LogError(ex, $"An error occurred while copying data for project with ID {project.Id} to Cosmos DB.");
+                }
+            }
+
+            var cosmosProjects = container.GetItemQueryIterator<Project>("SELECT * FROM c");
+            while (cosmosProjects.HasMoreResults)
+            {
+                var response = await cosmosProjects.ReadNextAsync();
+                foreach (var cosmosProject in response)
+                {
+                    if (projects.All(p => p.Id != cosmosProject.Id))
+                    {
+                        try
+                        {
+                            await container.DeleteItemAsync<Project>(cosmosProject.Id.ToString(), new PartitionKey(cosmosProject.Id));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"An error occurred while deleting project with ID {cosmosProject.Id} from Cosmos DB.");
+                        }
+                    }
                 }
             }
         }
 
 
         [Function("DataCopyingFunction")]
-        public async Task RunAsync([TimerTrigger("0 0 * * * *")] MyInfo myTimer)
+        public async Task RunAsync([TimerTrigger("0 */5 * * * *")] MyInfo myTimer)
         {
             _logger.LogInformation("C# Timer trigger function processed a request.");
             try

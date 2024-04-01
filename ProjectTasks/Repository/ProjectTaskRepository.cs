@@ -79,7 +79,7 @@ namespace ProjectTasks.Repository
         }
         public async Task<List<Project>> GetProjectsAsync()
         {
-            return await _databaseContext.Projects.ToListAsync();
+            return await _databaseContext.Projects.Include(project=>project.Tasks).ToListAsync();
         }
         public async Task<List<Task_>> GetAllTasksFromProjectAsync(long projectId)
         {

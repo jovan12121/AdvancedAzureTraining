@@ -14,7 +14,7 @@ namespace ProjectTasks.Services
         }
         public async Task<Task_> AddTaskAsync(AddTaskDTO addTaskDTO)
         {
-            if (_repository.GetProjectAsync(addTaskDTO.ProjectId) != null)
+            if (await _repository.GetProjectAsync(addTaskDTO.ProjectId) != null)
             {
                 Task_ taskToAdd = new Task_ { TaskDescription = addTaskDTO.TaskDescription, TaskName = addTaskDTO.TaskName, ProjectId = addTaskDTO.ProjectId };
                 return await _repository.AddTaskAsync(taskToAdd);

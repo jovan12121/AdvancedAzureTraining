@@ -1,6 +1,10 @@
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Logging;
 using ProjectTasks.Infrastracture;
 using ProjectTasks.Interfaces;
 using ProjectTasks.Repository;
@@ -19,6 +23,8 @@ var clientSecret = builder.Configuration.GetSection("AzureAd:ClientSecret").Valu
 var tenantId = builder.Configuration.GetSection("AzureAd:TenantId").Value;
 var secretClient = new SecretClient(new Uri(keyVaultEndpoint), new ClientSecretCredential(tenantId, clientId, clientSecret));
 var connectionString = secretClient.GetSecret("projectDbConnectionString").Value.Value;
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -32,12 +38,14 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    IdentityModelEventSource.ShowPII = true;
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
