@@ -1,16 +1,25 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using ProjectTaskCosmos.Controllers;
 using ProjectTaskCosmos.Model;
+using System.Configuration;
 
 namespace ProjectTaskCosmos.Services
 {
     public class CosmosService
     {
         private readonly CosmosClient _client;
-        public CosmosService()
+        public CosmosService(IConfiguration configuration)
         {
-            var cosmosConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("ConnectionStrings")["CosmosDbConnectionString"];
+            var keyVaultEndpoint = configuration.GetSection("KeyVault:BaseUrl").Value;
+            var clientId = configuration.GetSection("AzureAd:ClientId").Value;
+            var clientSecret = configuration.GetSection("AzureAd:ClientSecret").Value;
+            var tenantId = configuration.GetSection("AzureAd:TenantId").Value;
+            var secretClient = new SecretClient(new Uri(keyVaultEndpoint), new ClientSecretCredential(tenantId, clientId, clientSecret));
+            var cosmosConnectionString = secretClient.GetSecret("cosmosDbConnectionString").Value.Value;
+            //var cosmosConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("ConnectionStrings")["CosmosDbConnectionString"];
             _client = new CosmosClient(connectionString: cosmosConnectionString);
         }
         private Container container

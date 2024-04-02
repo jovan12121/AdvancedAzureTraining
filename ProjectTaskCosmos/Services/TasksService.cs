@@ -6,9 +6,9 @@ namespace ProjectTaskCosmos.Services
     public class TasksService : ITasksService
     {
         private CosmosService _comsosService;
-        public TasksService()
+        public TasksService(IConfiguration configuration)
         {
-            _comsosService = new CosmosService();
+            _comsosService = new CosmosService(configuration);
         }
         public async Task<List<Task_>> GetAllTasksFromProjectAsync(long projectId)
         {

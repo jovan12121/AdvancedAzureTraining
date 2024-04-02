@@ -33,7 +33,6 @@ namespace ProjectTasksFunction
             using (SqlConnection connection = new SqlConnection(sqlServerConnectionString))
             {
                 connection.Open();
-
                 string projectQuery = "SELECT Id, ProjectName, Code FROM Projects";
                 using (SqlCommand projectCommand = new SqlCommand(projectQuery, connection))
                 {
@@ -140,7 +139,7 @@ namespace ProjectTasksFunction
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while copying data to Cosmos DB.");
+                _logger.LogError(ex, "An error  occurred while copying data to Cosmos DB:" + ex.Message);
             }
         }
         public class MyInfo
