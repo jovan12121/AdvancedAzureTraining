@@ -7,6 +7,7 @@ using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
 using ProjectTasks.Infrastracture;
 using ProjectTasks.Interfaces;
+using ProjectTasks.Middleware;
 using ProjectTasks.Repository;
 using ProjectTasks.Services;
 
@@ -42,7 +43,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

@@ -23,7 +23,7 @@ namespace ProjectTasks.Repository
             Task_ taskToDelete = _databaseContext.Tasks.FirstOrDefault(t=>t.Id == taskId);
             if (taskToDelete == null)
             {
-                throw new Exception("Task not found.");
+                throw new ApplicationException("Task not found.");
             }
             _databaseContext.Tasks.Remove(taskToDelete);
             await _databaseContext.SaveChangesAsync();
@@ -39,7 +39,7 @@ namespace ProjectTasks.Repository
             Task_ retVal = await _databaseContext.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
             if(retVal == null)
             {
-                throw new Exception("Task not found");
+                throw new ApplicationException("Task not found");
             }
             return retVal;
 
@@ -56,7 +56,7 @@ namespace ProjectTasks.Repository
             Project projectToDelete = await _databaseContext.Projects.FirstOrDefaultAsync(p=>p.Id == projectId);
             if (projectToDelete == null)
             {
-                throw new Exception("Project not found.");
+                throw new ApplicationException("Project not found.");
             }
             _databaseContext.Projects.Remove(projectToDelete);
             await _databaseContext.SaveChangesAsync();
@@ -73,7 +73,7 @@ namespace ProjectTasks.Repository
             Project retVal = await _databaseContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if(retVal == null)
             {
-                throw new Exception("Project not found.");
+                throw new ApplicationException("Project not found.");
             }
             return retVal;
         }

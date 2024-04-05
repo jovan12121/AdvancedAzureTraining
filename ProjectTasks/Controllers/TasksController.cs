@@ -18,62 +18,37 @@ namespace ProjectTasks.Controllers
         [HttpGet("getTask/{id}")]
         public async Task<IActionResult> GetTaskAsync(long id)
         {
-            try
-            {
-                return Ok(await _tasksService.GetTaskAsync(id));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _tasksService.GetTaskAsync(id));
+
         }
         [HttpGet("getTasksFromProject/{projectId}")]
         public async Task<IActionResult> GetTasksFromProject(long projectId)
         {
-            try
-            {
-                return Ok(await _tasksService.GetAllTasksFromProjectAsync(projectId));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _tasksService.GetAllTasksFromProjectAsync(projectId));
+
         }
         [HttpDelete("deleteTask/{id}")]
         public async Task<IActionResult> DeleteTask(long id)
         {
-            try
-            {
-                return Ok(await _tasksService.DeleteTaskAsync(id));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _tasksService.DeleteTaskAsync(id));
+
         }
         [HttpPut("updateTask")]
         public async Task<IActionResult> UpdateTask(EditTaskDTO editTaskDTO)
         {
-            try
-            {
-                return Ok(await _tasksService.UpdateTaskAsync(editTaskDTO));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _tasksService.UpdateTaskAsync(editTaskDTO));
+
         }
         [HttpPost("addTask")]
         public async Task<IActionResult> AddTask(AddTaskDTO addTaskDTO)
         {
-            try
-            {
-                return Ok(await _tasksService.AddTaskAsync(addTaskDTO));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _tasksService.AddTaskAsync(addTaskDTO));
+
         }
 
 

@@ -16,19 +16,33 @@ namespace ProjectTasks.Services
 
         public async Task<Project> AddProjectAsync(AddProjectDTO addProjectDTO)
         {
-            Project projectToAdd = new Project() { Code = addProjectDTO.Code, ProjectName = addProjectDTO.ProjectName, Tasks = new List<Task_>()};
+            Project projectToAdd = new Project() { Code = addProjectDTO.Code, ProjectName = addProjectDTO.ProjectName, Tasks = new List<Task_>() };
             return await _repository.AddProjectAsync(projectToAdd);
         }
 
         public async Task<bool> DeleteProjectAsync(long projectId)
         {
-            await _repository.DeleteProjectAsync(projectId); 
-            return true;
+            try
+            {
+                await _repository.DeleteProjectAsync(projectId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Project with Id " + projectId + " doesn't exist.");
+            }
         }
 
         public async Task<Project> GetProjectAsync(long projectId)
         {
-            return await _repository.GetProjectAsync(projectId);
+            try
+            {
+                return await _repository.GetProjectAsync(projectId);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Project with Id " + projectId + " doesn't exist.");
+            }
         }
 
         public async Task<List<Project>> GetProjectsAsync()

@@ -19,13 +19,20 @@ namespace ProjectTasks.Services
                 Task_ taskToAdd = new Task_ { TaskDescription = addTaskDTO.TaskDescription, TaskName = addTaskDTO.TaskName, ProjectId = addTaskDTO.ProjectId };
                 return await _repository.AddTaskAsync(taskToAdd);
             }
-            throw new Exception("Project with that ID doesn't exist!");
+            throw new ApplicationException("Project with that ID doesn't exist!");
         }
 
         public async Task<bool> DeleteTaskAsync(long taskId)
         {
-            await _repository.DeleteTaskAsync(taskId);
-            return true;
+            try
+            {
+                await _repository.DeleteTaskAsync(taskId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Task with " + taskId + " not found.");
+            }
         }
 
         public async Task<List<Task_>> GetAllTasksFromProjectAsync(long projectId)
@@ -35,12 +42,21 @@ namespace ProjectTasks.Services
 
         public async Task<Task_> GetTaskAsync(long taskId)
         {
-            return await _repository.GetTaskAsync(taskId);
+            try
+            {
+                return await _repository.GetTaskAsync(taskId);
+            }
+            catch(Exception ex)
+            {
+                throw new ApplicationException("Task with Id " + taskId + " doesn't exist.");
+            }
         }
 
         public async Task<Task_> UpdateTaskAsync(EditTaskDTO editTaskDTO)
         {
             Task_ taskToUpdate = await _repository.GetTaskAsync(editTaskDTO.Id);
+            if (taskToUpdate == null)
+                throw new ApplicationException("Task doesn't exist.");
             taskToUpdate.TaskDescription = editTaskDTO.TaskDescription;
             taskToUpdate.TaskName = editTaskDTO.TaskName;
             return await _repository.UpdateTaskAsync(taskToUpdate);

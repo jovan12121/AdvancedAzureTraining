@@ -18,69 +18,43 @@ namespace ProjectTasks.Controllers
         {
             _projectsService = projectsService;
         }
-        
+
         [HttpGet("getProjects")]
 
         public async Task<IActionResult> GetAllProjects()
         {
-            
-            try
-            {
-                HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
-                return Ok(await _projectsService.GetProjectsAsync());
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
+            return Ok(await _projectsService.GetProjectsAsync());
         }
         [HttpGet("getProject/{id}")]
         public async Task<IActionResult> GetAllProjects(long id)
         {
-            try
-            {
-                return Ok(await _projectsService.GetProjectAsync(id));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _projectsService.GetProjectAsync(id));
+
         }
         [HttpPut("updateProject")]
         public async Task<IActionResult> UpdateProject(EditProjectDTO editProjectDTO)
         {
-            try
-            {
-                return Ok(await _projectsService.UpdateProjectAsync(editProjectDTO));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _projectsService.UpdateProjectAsync(editProjectDTO));
+
+
         }
         [HttpDelete("deleteProject/{id}")]
         public async Task<IActionResult> DeleteProject(long id)
         {
-            try
-            {
-                return Ok(await _projectsService.DeleteProjectAsync(id));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _projectsService.DeleteProjectAsync(id));
+
         }
         [HttpPost("addProject")]
         public async Task<IActionResult> AddProject(AddProjectDTO addProjectDTO)
         {
-            try
-            {
-                return Ok(await _projectsService.AddProjectAsync(addProjectDTO));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+
+            return Ok(await _projectsService.AddProjectAsync(addProjectDTO));
+
         }
     }
 }
