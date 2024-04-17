@@ -42,6 +42,10 @@ stages:
         pathtoPublish: '$(build.artifactStagingDirectory)'
         artifactName: 'drop'
 
+    - script: |
+        dir $(build.artifactStagingDirectory)\drop
+      displayName: 'List Artifact Staging Directory Contents'
+
 - stage: Test
   displayName: 'Test Stage'
   dependsOn: Build
