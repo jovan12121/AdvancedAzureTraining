@@ -53,6 +53,7 @@ stages:
   - job: Deploy
     displayName: 'Deploy Job'
     steps:
+    - task: PublishBuildArtifacts@1
     - task: AzureWebApp@1
       displayName: 'Deploy to ProjecTasksCosmos'
       inputs:
