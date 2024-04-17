@@ -55,22 +55,24 @@ stages:
     - task: AzureWebApp@1
       displayName: 'Deploy to Cosmos'
       inputs:
-        azureSubscription: 'Azure subscription 1'
+        azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'webApp'
         appName: 'ProjectTaskCosmos20240329132020'
         package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+        deploymentMethod: 'auto'
 
     - task: AzureWebApp@1
       displayName: 'Deploy to ProjectTasks'
       inputs:
-        azureSubscription: 'Azure subscription 1'
+        azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'webApp'
         appName: 'ProjectTasks20240329135526'
         package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+        deploymentMethod: 'auto'
 
     - task: AzureFunctionApp@1
       inputs:
-        azureSubscription: 'Azure subscription 1'
+        azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'functionApp'
         appName: 'ProjectTasksFunction20240401142019'
         package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
