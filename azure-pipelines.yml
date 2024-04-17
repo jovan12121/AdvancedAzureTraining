@@ -13,9 +13,6 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  projectTasksComsosArm: '**/serviceDependencies.ProjectTaskCosmos20240329132020 - Web Deploy.json'
-  projectTasksArm: '**/serviceDependencies.ProjectTasks20240329135526 - Web Deploy.json'
-  projectTasksFunctionArm: '**/serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json'
 
 stages:
 - stage: Build
@@ -70,7 +67,7 @@ stages:
         azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'webApp'
         appName: 'ProjectTaskCosmos20240329132020'
-        package: '**/serviceDependencies.ProjectTaskCosmos20240329132020 - Web Deploy.json'
+        package: '$(build.artifactStagingDirectory)/**/*.zip'
         deploymentMethod: 'auto'
 
     - task: AzureWebApp@1
@@ -79,7 +76,7 @@ stages:
         azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'webApp'
         appName: 'ProjectTasks20240329135526'
-        package: '**/serviceDependencies.ProjectTasks20240329135526 - Web Deploy.json'
+        package: '$(build.artifactStagingDirectory)/**/*.zip'
         deploymentMethod: 'auto'
 
     - task: AzureFunctionApp@1
@@ -87,7 +84,7 @@ stages:
         azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'functionApp'
         appName: 'ProjectTasksFunction20240401142019'
-        package: '**/serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json'
+        package: '$(build.artifactStagingDirectory)/**/*.zip'
         deploymentMethod: 'auto'
 
 - stage: Notify
