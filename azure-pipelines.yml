@@ -22,17 +22,25 @@ stages:
     displayName: 'Build Job'
     steps:
     - checkout: self
+
     - task: NuGetToolInstaller@1
 
     - task: NuGetCommand@2
       inputs:
         restoreSolution: '$(solution)'
+
     - task: VSBuild@1
       inputs:
         solution: '$(solution)'
         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Build Artifacts'
+      inputs:
+        pathtoPublish: '$(build.artifactStagingDirectory)'
+        artifactName: 'drop'
 
 - stage: Test
   displayName: 'Test Stage'
@@ -53,14 +61,13 @@ stages:
   - job: Deploy
     displayName: 'Deploy Job'
     steps:
-    - task: PublishBuildArtifacts@1
     - task: AzureWebApp@1
       displayName: 'Deploy to ProjecTasksCosmos'
       inputs:
         azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'webApp'
         appName: 'ProjectTaskCosmos20240329132020'
-        package: '$(System.ArtifactsDirectory)/ProjectTaskCosmos/Properties/serviceDependencies.ProjectTaskCosmos20240329132020 - Web Deploy.json'
+        package: '$(System.ArtifactsDirectory)/drop/*.zip'
         deploymentMethod: 'auto'
 
     - task: AzureWebApp@1
@@ -69,7 +76,7 @@ stages:
         azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'webApp'
         appName: 'ProjectTasks20240329135526'
-        package: '$(System.ArtifactsDirectory)/ProjectTasks/Properties/serviceDependencies.ProjectTasks20240329135526 - Web Deploy.json'
+        package: '$(System.ArtifactsDirectory)/drop/*.zip'
         deploymentMethod: 'auto'
 
     - task: AzureFunctionApp@1
@@ -77,7 +84,7 @@ stages:
         azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
         appType: 'functionApp'
         appName: 'ProjectTasksFunction20240401142019'
-        package: '$(System.ArtifactsDirectory)/ProjectTasksFunction/Properties/serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json'
+        package: '$(System.ArtifactsDirectory)/drop/*.zip'
         deploymentMethod: 'auto'
 
 - stage: Notify
