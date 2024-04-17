@@ -14,21 +14,84 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
-steps:
-- task: NuGetToolInstaller@1
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: Build
+    displayName: 'Build Job'
+    steps:
+    - task: NuGetToolInstaller@1
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
+    - task: VSBuild@1
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- stage: Test
+  displayName: 'Test Stage'
+  dependsOn: Build
+  jobs:
+  - job: Test
+    displayName: 'Test Job'
+    steps:
+    - task: VSTest@2
+      inputs:
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- stage: Deploy
+  displayName: 'Deploy Stage'
+  dependsOn: Test
+  jobs:
+  - job: Deploy
+    displayName: 'Deploy Job'
+    steps:
+    - task: AzureWebApp@1
+      displayName: 'Deploy to Cosmos'
+      inputs:
+        azureSubscription: 'Azure subscription 1'
+        appType: 'webApp'
+        appName: 'ProjectTaskCosmos20240329132020'
+        package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+
+    - task: AzureWebApp@1
+      displayName: 'Deploy to ProjectTasks'
+      inputs:
+        azureSubscription: 'Azure subscription 1'
+        appType: 'webApp'
+        appName: 'ProjectTasks20240329135526'
+        package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+
+    - task: AzureFunctionApp@1
+      inputs:
+        azureSubscription: 'Azure subscription 1'
+        appType: 'functionApp'
+        appName: 'ProjectTasksFunction20240401142019'
+        package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+        deploymentMethod: 'auto'
+
+- stage: Notify
+  displayName: 'Notification Stage'
+  dependsOn: [Build, Test, Deploy]
+  jobs:
+  - job: Notify
+    displayName: 'Send Email Notification'
+    steps:
+    - task: SendEmail@1
+      inputs:
+        To: 'jocami.jm.jm@gmail.com'
+        From: 'jovanmiladinovice14@gmail.com'
+        Subject: 'Pipeline Status: $(Build.Result)'
+        Body: |
+          The pipeline $(Build.DefinitionName) has completed with status: $(Build.Result).
+          Build number: $(Build.BuildNumber)
+          Build reason: $(Build.Reason)
+          Build URL: $(Build.BuildUri)
+        BodyAsHtml: false
+        AddAttachment: false
