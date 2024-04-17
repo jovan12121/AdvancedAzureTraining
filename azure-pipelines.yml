@@ -42,8 +42,8 @@ stages:
         pathtoPublish: '$(build.artifactStagingDirectory)'
         artifactName: 'drop'
 
-    - script: |
-        dir $(build.artifactStagingDirectory)\drop
+    - powershell: |
+        Get-ChildItem -Path "$(System.ArtifactsDirectory)\drop" -Recurse
       displayName: 'List Artifact Staging Directory Contents'
 
 - stage: Test
