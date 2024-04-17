@@ -106,4 +106,3 @@ stages:
           Build URL: $(Build.BuildUri)
         BodyAsHtml: false
         AddAttachment: false
-
