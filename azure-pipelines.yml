@@ -56,13 +56,21 @@ stages:
   - job: Deploy
     displayName: 'Deploy Job'
     steps:
-      - task: AzureFunctionApp@2
-        inputs:
-          connectedServiceNameARM: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
-          appType: 'functionApp'
-          appName: 'ProjectTasksFunction20240401142019'
-          package: 'ProjectTasksFunction/Properties/serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json'
-          deploymentMethod: 'auto'
+    - task: CmdLine@2
+      inputs:
+        script: 'echo Build.ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)'
+    - task: CmdLine@2
+      inputs:
+        script: 'dir $(Build.ArtifactStagingDirectory) /s /b'
+
+
+      # - task: AzureFunctionApp@2
+      #   inputs:
+      #     connectedServiceNameARM: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
+      #     appType: 'functionApp'
+      #     appName: 'ProjectTasksFunction20240401142019'
+      #     package: 'ProjectTasksFunction/Properties/serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json'
+      #     deploymentMethod: 'auto'
 
       # - task: CmdLine@2
       #   inputs:
