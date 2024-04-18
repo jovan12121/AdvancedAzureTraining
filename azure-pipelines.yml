@@ -56,16 +56,14 @@ stages:
   - job: Deploy
     displayName: 'Deploy Job'
     steps:
-      - task: PowerShell@2
+      - task: AzureFunctionApp@2
         inputs:
-          targetType: 'inline'
-          script: |
-            $filePath = "$(Build.ArtifactStagingDirectory)\ProjectTasksFunction\Properties\serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json"
-            if (Test-Path $filePath) {
-                Write-Output "File exists at $filePath"
-            } else {
-                Write-Error "File does not exist at $filePath"
-            }
+          connectedServiceNameARM: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
+          appType: 'functionApp'
+          appName: 'ProjectTasksFunction20240401142019'
+          package: '$(Agent.WorkFolder)/1/s/ProjectTasksFunction/Properties/serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json'
+          deploymentMethod: 'auto'
+
 
 
 
