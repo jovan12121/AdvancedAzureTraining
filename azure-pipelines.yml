@@ -56,12 +56,10 @@ stages:
   - job: Deploy
     displayName: 'Deploy Job'
     steps:
-    - task: CmdLine@2
-      inputs:
-        script: 'echo Build.ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)'
-    - task: CmdLine@2
-      inputs:
-        script: 'dir $(Build.ArtifactStagingDirectory) /s /b'
+      - task: CmdLine@2
+        inputs:
+          script: 'dir /s /b "$(Build.ArtifactStagingDirectory)"'
+
 
 
       # - task: AzureFunctionApp@2
