@@ -60,7 +60,12 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
-            Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)" -Recurse
+            $filePath = "$(Build.ArtifactStagingDirectory)\ProjectTasksFunction\Properties\serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json"
+            if (Test-Path $filePath) {
+                Write-Output "File exists at $filePath"
+            } else {
+                Write-Error "File does not exist at $filePath"
+            }
 
 
 
