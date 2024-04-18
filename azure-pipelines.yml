@@ -58,7 +58,7 @@ stages:
     steps:
       - task: CmdLine@2
         inputs:
-          script: 'dir /s /b "$(Build.ArtifactStagingDirectory)"'
+          script: 'dir "$(Build.ArtifactStagingDirectory)" /b'
 
 
 
