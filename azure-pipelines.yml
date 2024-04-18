@@ -56,48 +56,15 @@ stages:
   - job: Deploy
     displayName: 'Deploy Job'
     steps:
-    - task: AzureWebApp@1
-      displayName: 'Deploy to ProjecTasksCosmos'
-      inputs:
-        azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
-        appType: 'webApp'
-        appName: 'ProjectTaskCosmos20240329132020'
-        package: '$(build.artifactStagingDirectory)/drop/**/*.zip'
-        deploymentMethod: 'auto'
+      - powershell: |
+          Get-ChildItem -Path $(build.artifactStagingDirectory)
+          displayName: 'List Files in artifactStagingDirectory'
+      # - task: AzureWebApp@1
+      #   displayName: 'Deploy to ProjecTasksCosmos'
+      #   inputs:
+      #     azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
+      #     appType: 'webApp'
+      #     appName: 'ProjectTaskCosmos20240329132020'
+      #     package: '$(build.artifactStagingDirectory)/drop/**/*.zip'
+      #     deploymentMethod: 'auto'
 
-    - task: AzureWebApp@1
-      displayName: 'Deploy to ProjectTasks'
-      inputs:
-        azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
-        appType: 'webApp'
-        appName: 'ProjectTasks20240329135526'
-        package: '$(build.artifactStagingDirectory)/drop/**/*.zip'
-        deploymentMethod: 'auto'
-
-    - task: AzureFunctionApp@1
-      inputs:
-        azureSubscription: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
-        appType: 'functionApp'
-        appName: 'ProjectTasksFunction20240401142019'
-        package: '$(build.artifactStagingDirectory)/drop/**/*.zip'
-        deploymentMethod: 'auto'
-
-- stage: Notify
-  displayName: 'Notification Stage'
-  dependsOn: [Build, Test, Deploy]
-  jobs:
-  - job: Notify
-    displayName: 'Send Email Notification'
-    steps:
-    - task: SendEmail@1
-      inputs:
-        To: 'jocami.jm.jm@gmail.com'
-        From: 'jovanmiladinovice14@gmail.com'
-        Subject: 'Pipeline Status: $(Build.Result)'
-        Body: |
-          The pipeline $(Build.DefinitionName) has completed with status: $(Build.Result).
-          Build number: $(Build.BuildNumber)
-          Build reason: $(Build.Reason)
-          Build URL: $(Build.BuildUri)
-        BodyAsHtml: false
-        AddAttachment: false
