@@ -57,7 +57,7 @@ stages:
     displayName: 'Deploy Job'
     steps:
       - powershell: |
-          Get-ChildItem -Path $(build.artifactStagingDirectory)
+          Get-ChildItem -Path $(System.DefaultWorkingDirectory)
           displayName: 'List Files in artifactStagingDirectory'
       # - task: AzureWebApp@1
       #   displayName: 'Deploy to ProjecTasksCosmos'
