@@ -56,9 +56,11 @@ stages:
   - job: Deploy
     displayName: 'Deploy Job'
     steps:
-      - task: CmdLine@2
+      - task: PowerShell@2
         inputs:
-          script: 'dir "$(Build.ArtifactStagingDirectory)" /b'
+          targetType: 'inline'
+          script: |
+            Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)" -Recurse
 
 
 
