@@ -56,30 +56,30 @@ stages:
   - job: Deploy
     displayName: 'Deploy Job'
     steps:
-    # - task: AzureFunctionApp@2
-    #   inputs:
-    #     connectedServiceNameARM: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
-    #     appType: 'functionApp'
-    #     appName: 'ProjectTasksFunction20240401142019'
-    #     package: '$(Agent.WorkFolder)/1/a/s/ProjectTasksFunction/Properties/serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json'
-    #     deploymentMethod: 'auto'
-      - task: CmdLine@2
-        inputs:
-          script: |
-            echo "Structure of work folder of this pipeline:"
-            tree $(Agent.WorkFolder)\1 /f
+    - task: AzureFunctionApp@2
+      inputs:
+        connectedServiceNameARM: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
+        appType: 'functionApp'
+        appName: 'ProjectTasksFunction20240401142019'
+        package: '$(Agent.WorkFolder)/1/s/ProjectTasksFunction/Properties/serviceDependencies.ProjectTasksFunction20240401142019 - Zip Deploy.json'
+        deploymentMethod: 'auto'
+      # - task: CmdLine@2
+      #   inputs:
+      #     script: |
+      #       echo "Structure of work folder of this pipeline:"
+      #       tree $(Agent.WorkFolder)\1 /f
             
-            echo "Build.ArtifactStagingDirectory:" 
+      #       echo "Build.ArtifactStagingDirectory:" 
             
-            echo "$(Build.ArtifactStagingDirectory)"
+      #       echo "$(Build.ArtifactStagingDirectory)"
             
-            echo "Build.BinariesDirectory:" 
+      #       echo "Build.BinariesDirectory:" 
             
-            echo "$(Build.BinariesDirectory)"
+      #       echo "$(Build.BinariesDirectory)"
             
-            echo "Build.SourcesDirectory:"
+      #       echo "Build.SourcesDirectory:"
             
-            echo "$(Build.SourcesDirectory)"
+      #       echo "$(Build.SourcesDirectory)"
       # - task: AzureWebApp@1
       #   displayName: 'Deploy to ProjecTasksCosmos'
       #   inputs:
