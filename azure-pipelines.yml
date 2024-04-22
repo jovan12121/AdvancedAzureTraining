@@ -21,7 +21,6 @@ stages:
   - job: Build
     displayName: 'Build Job'
     steps:
-    - checkout: self
 
     - task: NuGetToolInstaller@1
 
@@ -35,7 +34,6 @@ stages:
         msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
-    - task: PublishBuildArtifacts@1
 
 - stage: Test
   displayName: 'Test Stage'
@@ -61,7 +59,7 @@ stages:
           connectedServiceNameARM: 'Azure subscription 1(ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
           appType: 'functionApp'
           appName: 'ProjectTasksFunction20240401142019'
-          package: '$(Build.ArtifactStagingDirectory)/ProjecTasksFunction'
+          package: '$(System.DefaultWorkingDirectory)/**/*.zip'
           deploymentMethod: 'auto'
 
 
