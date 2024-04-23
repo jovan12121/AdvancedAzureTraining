@@ -22,18 +22,32 @@ stages:
     displayName: 'Build Job'
     steps:
 
-    - task: NuGetToolInstaller@1
+    - script: |
+        dotnet restore
+        dotnet build --configuration Release
+      displayName: 'Restore and Build'
 
-    - task: NuGetCommand@2
+    - task: DotNetCoreCLI@2
       inputs:
-        restoreSolution: '$(solution)'
+        command: publish
+        arguments: '--configuration Release --output publish_output'
+        projects: '*.csproj'
+        publishWebProjects: false
+        modifyOutputPath: false
+        zipAfterPublish: false
+      displayName: 'Publish .NET Core'
 
-    - task: VSBuild@1
+    - task: ArchiveFiles@2
+      displayName: "Archive files"
       inputs:
-        solution: '$(solution)'
-        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-        platform: '$(buildPlatform)'
-        configuration: '$(buildConfiguration)'
+        rootFolderOrFile: "$(System.DefaultWorkingDirectory)/publish_output"
+        includeRootFolder: false
+        archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
+        artifactName: 'drop'
 
 - stage: Test
   displayName: 'Test Stage'
