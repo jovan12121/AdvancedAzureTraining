@@ -12,7 +12,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/*.sln'
+  solution: '/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
@@ -26,8 +26,9 @@ stages:
 
     - script: |
         dotnet restore
-        dotnet build --configuration $(buildConfiguration) $(solution)
+        dotnet build --configuration $(buildConfiguration) ProjectTasks/ProjectTasks.sln
       displayName: 'Restore and Build'
+
 
     - task: DotNetCoreCLI@2
       inputs:
