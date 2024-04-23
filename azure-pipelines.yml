@@ -4,7 +4,9 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
 
 trigger:
-- master
+  branches:
+    include:
+      - master
 
 pool:
   vmImage: 'windows-latest'
@@ -24,13 +26,13 @@ stages:
 
     - script: |
         dotnet restore
-        dotnet build --configuration Release
+        dotnet build --configuration $(buildConfiguration) $(solution)
       displayName: 'Restore and Build'
 
     - task: DotNetCoreCLI@2
       inputs:
         command: publish
-        arguments: '--configuration Release --output publish_output'
+        arguments: '--configuration $(buildConfiguration) --output publish_output'
         projects: '**/*.csproj'
         publishWebProjects: false
         modifyOutputPath: false
@@ -74,6 +76,7 @@ stages:
         appType: 'functionApp'
         appName: 'ProjectTasksFunction20240401142019'
         package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+
 
 
 
