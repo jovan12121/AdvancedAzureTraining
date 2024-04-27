@@ -27,6 +27,11 @@ steps:
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
 
 - task: VSTest@2
   inputs:
@@ -40,3 +45,4 @@ steps:
     appType: 'webApp'
     WebAppName: 'ProjectTaskCosmos20240329132020'
     packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+
