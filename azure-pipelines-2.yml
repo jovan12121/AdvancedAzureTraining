@@ -44,5 +44,5 @@ steps:
     azureSubscription: 'Azure subscription 1 (ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
     appType: 'webApp'
     WebAppName: 'ProjectTaskCosmos20240329132020'
-    packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'
 
