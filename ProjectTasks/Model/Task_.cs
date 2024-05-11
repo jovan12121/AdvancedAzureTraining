@@ -10,5 +10,8 @@ namespace ProjectTasks.Model
         [JsonIgnore]
         public Project Project { get; set; }
         public long ProjectId { get; set; }
+        [JsonIgnore]
+        public List<FileAttachment> Files { get; set; }
+
     }
 }

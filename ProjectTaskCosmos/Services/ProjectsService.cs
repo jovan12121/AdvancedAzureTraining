@@ -19,5 +19,10 @@ namespace ProjectTaskCosmos.Services
         {
             return await cosmosService.GetProjectsAsync();
         }
+
+        public string Test()
+        {
+            return "TESTING!";
+        }
     }
 }

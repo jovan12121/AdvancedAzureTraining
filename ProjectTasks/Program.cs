@@ -33,6 +33,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IProjectsService,ProjectsService>();
 builder.Services.AddScoped<ITasksService, TasksService>();
 builder.Services.AddScoped<IProjectTaskRepository, ProjectTaskRepository>();
+//builder.Services.AddScoped<IFilesService, FilesServiceLocal>();
+builder.Services.AddScoped<IFilesService, FilesServiceAzure>();
 builder.Services.AddDbContext<DatabaseContext>(options => { options.UseSqlServer(connectionString); });
 var app = builder.Build();
 

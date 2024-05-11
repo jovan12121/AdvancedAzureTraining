@@ -86,5 +86,38 @@ namespace ProjectTasks.Repository
             return await _databaseContext.Tasks.Where(t=>t.ProjectId == projectId).ToListAsync();
         }
 
+        public async Task<FileAttachment> AddFileToProjectAsync(FileAttachment fileAttachment)
+        {
+            await _databaseContext.Files.AddAsync(fileAttachment);
+            await _databaseContext.SaveChangesAsync();
+            return fileAttachment;
+        }
+
+        public async Task<FileAttachment> AddFileToTasksAsync(FileAttachment fileAttachment)
+        {
+            await _databaseContext.Files.AddAsync(fileAttachment);
+            await _databaseContext.SaveChangesAsync();
+            return fileAttachment;
+        }
+
+        public async Task<List<FileAttachment>> GetFilesFromProjectAsync(long projectId)
+        {
+            return await _databaseContext.Files.Where(f => f.ProjectId == projectId).ToListAsync();
+        }
+
+        public async Task<List<FileAttachment>> GetFilesFromTaskAsync(long taskId)
+        {
+            return await _databaseContext.Files.Where(f => f.TaskId == taskId).ToListAsync();
+        }
+
+        public async Task<FileAttachment> GetFileAsync(long fileId)
+        {
+            return await _databaseContext.Files.FirstOrDefaultAsync(f => f.Id == fileId);
+        }
+        public async Task DeleteFileAsync(long fileId)
+        {
+            await _databaseContext.Files.Where(f => f.Id == fileId).ExecuteDeleteAsync();
+            await _databaseContext.SaveChangesAsync();
+        }
     }
 }

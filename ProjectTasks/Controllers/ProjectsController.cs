@@ -13,10 +13,12 @@ namespace ProjectTasks.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectsService _projectsService;
+        private readonly IFilesService _filesService;
         static readonly string[] scopeRequiredByApi = new string[] { "ReadWriteAccess" };
-        public ProjectsController(IProjectsService projectsService)
+        public ProjectsController(IProjectsService projectsService, IFilesService filesService)
         {
             _projectsService = projectsService;
+            _filesService = filesService;
         }
 
         [HttpGet("getProjects")]
@@ -55,6 +57,22 @@ namespace ProjectTasks.Controllers
 
             return Ok(await _projectsService.AddProjectAsync(addProjectDTO));
 
+        }
+        [HttpPost("addFileToProject/{projectId}")]
+        public async Task<IActionResult> AddFileToProject(long projectId,[FromForm]IFormFile file)
+        {
+            return Ok(await _filesService.AddFileToProjectAsync(file,projectId));
+        }
+        [HttpGet("getFilesFromProject/{projectId}")]
+        public async Task<IActionResult> GetFilesFromProject(long projectId)
+        {
+            var memoryStream = await _filesService.DownloadFilesFromProjectAsync(projectId);
+            return File(memoryStream, "application/zip", $"project_{projectId}_files.zip");
+        }
+        [HttpDelete("deleteFileFromProject")]
+        public async Task<IActionResult> DeleteFileFromTask(long fileId, long projectId)
+        {
+            return Ok(await _filesService.DeleteFileFromProjectAsync(fileId, projectId));
         }
     }
 }

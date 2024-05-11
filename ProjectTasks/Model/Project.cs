@@ -6,5 +6,6 @@
         public string ProjectName { get; set; }
         public string Code { get; set; }
         public List<Task_> Tasks { get; set; }
+        public List<FileAttachment> Files { get; set; }
     }
 }

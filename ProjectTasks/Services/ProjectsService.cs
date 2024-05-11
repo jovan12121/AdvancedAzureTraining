@@ -24,6 +24,11 @@ namespace ProjectTasks.Services
         {
             try
             {
+                //List<FileAttachment> fileAttachments = await _repository.GetFilesFromProject(projectId);
+                //foreach (var fileAttachment in fileAttachments)
+                //{
+                //    File.Delete(fileAttachment.Path);
+                //}
                 await _repository.DeleteProjectAsync(projectId);
                 return true;
             }

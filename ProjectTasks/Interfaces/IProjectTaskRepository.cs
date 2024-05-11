@@ -17,5 +17,12 @@ namespace ProjectTasks.Interfaces
         public  Task<Project> GetProjectAsync(long projectId);
         public  Task<List<Project>> GetProjectsAsync();
         public  Task<List<Task_>> GetAllTasksFromProjectAsync(long projectId);
+        public  Task<FileAttachment> AddFileToProjectAsync(FileAttachment fileAttachment);
+        public Task<FileAttachment> AddFileToTasksAsync(FileAttachment fileAttachment);
+        public Task<List<FileAttachment>> GetFilesFromProjectAsync(long projectId);
+        public Task<List<FileAttachment>> GetFilesFromTaskAsync(long taskId);
+        public Task<FileAttachment> GetFileAsync(long fileId);
+        public Task DeleteFileAsync(long fileId);
+
     }
 }

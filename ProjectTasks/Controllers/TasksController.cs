@@ -10,9 +10,11 @@ namespace ProjectTasks.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITasksService _tasksService;
-        public TasksController(ITasksService tasksService)
+        private readonly IFilesService _filesService;
+        public TasksController(ITasksService tasksService, IFilesService filesService)
         {
             _tasksService = tasksService;
+            _filesService = filesService;
         }
 
         [HttpGet("getTask/{id}")]
@@ -49,6 +51,22 @@ namespace ProjectTasks.Controllers
 
             return Ok(await _tasksService.AddTaskAsync(addTaskDTO));
 
+        }
+        [HttpPost("addFileToTask/{taskId}")]
+        public async Task<IActionResult> AddFileToTask(long taskId, [FromForm] IFormFile file)
+        {
+            return Ok(await _filesService.AddFileToTaskAsync(file, taskId));
+        }
+        [HttpGet("downloadFilesFromTask/{taskId}")]
+        public async Task<IActionResult> GetFilesFromTask(long taskId)
+        {
+            var memoryStream = await _filesService.DownloadFilesFromProjectAsync(taskId);
+            return File(memoryStream, "application/zip", $"task_{taskId}_files.zip");
+        }
+        [HttpDelete("deleteFileFromTask")]
+        public async Task<IActionResult> DeleteFileFromTask(long fileId, long taskId)
+        {
+            return Ok(await _filesService.DeleteFileFromTaskAsync(fileId,taskId));
         }
 
 
