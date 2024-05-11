@@ -37,11 +37,12 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
 - task: AzureRmWebAppDeployment@4
   inputs:
     ConnectionType: 'AzureRM'
     azureSubscription: 'Azure subscription 1 (ae066153-bd3c-4b67-a2c8-2d4d8ea1ce38)'
     appType: 'webApp'
-    WebAppName: 'ProjectTasks20240329135526'
-    packageForLinux: '$(Build.ArtifactStagingDirectory)/**/ProjectTasks.zip'
+    WebAppName: 'ProjectTaskCosmos20240329132020'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)/**/ProjectTaskCosmos.zip'
 
