@@ -1,4 +1,5 @@
 ﻿using ProjectTasks.DTO;
+using ProjectTasks.Enums;
 using ProjectTasks.Interfaces;
 using ProjectTasks.Model;
 using ProjectTasks.Repository;
@@ -8,15 +9,17 @@ namespace ProjectTasks.Services
     public class ProjectsService : IProjectsService
     {
         private readonly IProjectTaskRepository _repository;
-
-        public ProjectsService(IProjectTaskRepository repository)
+        private readonly IRabbitMQMessagingService _rabbitmqMessagingService;
+        public ProjectsService(IProjectTaskRepository repository, IRabbitMQMessagingService rabbitmqMessagingService)
         {
             _repository = repository;
+            _rabbitmqMessagingService = rabbitmqMessagingService;
         }
 
         public async Task<Project> AddProjectAsync(AddProjectDTO addProjectDTO)
         {
-            Project projectToAdd = new Project() { Code = addProjectDTO.Code, ProjectName = addProjectDTO.ProjectName, Tasks = new List<Task_>() };
+            DateTime? dateStarted = addProjectDTO.DateStarted == null ? DateTime.Now : addProjectDTO.DateStarted;
+            Project projectToAdd = new Project() { Code = addProjectDTO.Code, ProjectName = addProjectDTO.ProjectName, Tasks = new List<Task_>(), DateStarted = (DateTime)dateStarted, Status = Enums.ProjectStatus.IN_PROGRESS };
             return await _repository.AddProjectAsync(projectToAdd);
         }
 
@@ -34,6 +37,7 @@ namespace ProjectTasks.Services
             }
             catch (Exception ex)
             {
+                _rabbitmqMessagingService.PublishMessage("Error occured: Project with Id " + projectId + " doesn't exist.");
                 throw new ApplicationException("Project with Id " + projectId + " doesn't exist.");
             }
         }
@@ -46,6 +50,7 @@ namespace ProjectTasks.Services
             }
             catch (Exception ex)
             {
+                _rabbitmqMessagingService.PublishMessage("Error occured: Project with Id " + projectId + " doesn't exist.");
                 throw new ApplicationException("Project with Id " + projectId + " doesn't exist.");
             }
         }
@@ -61,6 +66,18 @@ namespace ProjectTasks.Services
             projectToUpdate.ProjectName = editProjectDTO.ProjectName;
             projectToUpdate.Code = editProjectDTO.Code;
             return await _repository.UpdateProjectAsync(projectToUpdate);
+        }
+
+        public async Task<Project> UpdateProjectStatusAsync(long projectId, ProjectStatus projectStatus)
+        {
+            Project projectToUpdateStatus = await _repository.GetProjectAsync(projectId);
+            projectToUpdateStatus.Status = projectStatus;
+            if(projectStatus == ProjectStatus.FAILED || projectStatus == ProjectStatus.COMPLETE)
+            {
+                projectToUpdateStatus.DateFinished = DateTime.Now;
+            }
+            await _repository.UpdateProjectAsync(projectToUpdateStatus);
+            return projectToUpdateStatus; 
         }
     }
 }

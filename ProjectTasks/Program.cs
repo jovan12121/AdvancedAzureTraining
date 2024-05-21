@@ -35,6 +35,8 @@ builder.Services.AddScoped<ITasksService, TasksService>();
 builder.Services.AddScoped<IProjectTaskRepository, ProjectTaskRepository>();
 //builder.Services.AddScoped<IFilesService, FilesServiceLocal>();
 builder.Services.AddScoped<IFilesService, FilesServiceAzure>();
+builder.Services.AddScoped<IRabbitMQMessagingService, RabbitMQMessagingService>();
+builder.Services.AddScoped<IReportGeneratorService, ReportGeneratorService>();
 builder.Services.AddDbContext<DatabaseContext>(options => { options.UseSqlServer(connectionString); });
 var app = builder.Build();
 

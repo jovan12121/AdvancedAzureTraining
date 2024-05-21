@@ -8,17 +8,19 @@ namespace ProjectTasks.Services
     public class FilesServiceLocal : IFilesService
     {
         private readonly IProjectTaskRepository _repository;
-
+        private readonly IRabbitMQMessagingService _messagingService;
         private readonly string _directoryPath = "Files";
 
-        public FilesServiceLocal(IProjectTaskRepository repository)
+        public FilesServiceLocal(IProjectTaskRepository repository, IRabbitMQMessagingService messagingService)
         {
             _repository = repository;
+            _messagingService = messagingService;
         }
         public async Task<FileAttachment> AddFileToProjectAsync(IFormFile file, long projectId)
         {
             if (file == null || file.Length == 0)
             {
+                _messagingService.PublishMessage("Error occured: File is null or empty.");
                 throw new ApplicationException("File is null or empty.");
             }
             string fileName = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
@@ -38,6 +40,7 @@ namespace ProjectTasks.Services
         {
             if (file == null || file.Length == 0)
             {
+                _messagingService.PublishMessage("Error occured: File is null or empty.");
                 throw new ApplicationException("File is null or empty.");
             }
             string fileName = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
@@ -57,10 +60,12 @@ namespace ProjectTasks.Services
             FileAttachment file = await _repository.GetFileAsync(fileId);
             if(file is null)
             {
+                _messagingService.PublishMessage("Error occured: File not found.");
                 throw new ApplicationException("File not found.");
             }
             if(file.ProjectId != projectId)
             {
+                _messagingService.PublishMessage("Error occured: File is not in given project.");
                 throw new ApplicationException("File is not in given project.");
             }
             File.Delete(file.Path);
@@ -73,10 +78,12 @@ namespace ProjectTasks.Services
             FileAttachment file = await _repository.GetFileAsync(fileId);
             if (file is null)
             {
+                _messagingService.PublishMessage("Error occured: File not found.");
                 throw new ApplicationException("File not found.");
             }
             if (file.TaskId != taskId)
             {
+                _messagingService.PublishMessage("Error occured: File is not in given task.");
                 throw new ApplicationException("File is not in given task.");
             }
             File.Delete(file.Path);

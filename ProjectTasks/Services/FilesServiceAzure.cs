@@ -10,19 +10,21 @@ namespace ProjectTasks.Services
     {
         private readonly IProjectTaskRepository _repository;
         private readonly BlobContainerClient _blobContainerClient;
-
-        public FilesServiceAzure(IConfiguration configuration, IProjectTaskRepository repository)
+        private readonly IRabbitMQMessagingService _rabbitMQMessagingService;
+        public FilesServiceAzure(IConfiguration configuration, IProjectTaskRepository repository, IRabbitMQMessagingService rabbitMQMessagingService)
         {
             _repository = repository;
             string connectionString = configuration.GetSection("BlobConnectionString").Value.ToString();
             string containerName = configuration.GetSection("BlobContainerName").Value.ToString();
-            _blobContainerClient = new BlobContainerClient(connectionString: connectionString,blobContainerName: containerName);
+            _blobContainerClient = new BlobContainerClient(connectionString: connectionString, blobContainerName: containerName);
+            _rabbitMQMessagingService = rabbitMQMessagingService;
         }
 
         public async Task<FileAttachment> AddFileToProjectAsync(IFormFile file, long projectId)
         {
             if(file == null || file.Length == 0)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: File is null or empty.");
                 throw new ApplicationException("File is null or empty.");
             }
 
@@ -41,6 +43,7 @@ namespace ProjectTasks.Services
         {
             if (file == null || file.Length == 0)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: File is null or empty.");
                 throw new ApplicationException("File is null or empty.");
             }
 
@@ -60,10 +63,12 @@ namespace ProjectTasks.Services
             FileAttachment file = await _repository.GetFileAsync(fileId);
             if(file is null)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: File doesn't exist.");
                 throw new ApplicationException("File doesn't exist.");
             }
             if(file.ProjectId!=projectId)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: File is not in given project.");
                 throw new ApplicationException("File is not in given project.");
             }
             BlobClient blobClient = _blobContainerClient.GetBlobClient($"Project_{projectId}/{file.Name}");
@@ -77,10 +82,12 @@ namespace ProjectTasks.Services
             FileAttachment file = await _repository.GetFileAsync(fileId);
             if (file is null)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: File doesn't exist.");
                 throw new ApplicationException("File doesn't exist.");
             }
             if (file.TaskId != taskId)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: File is not in given task.");
                 throw new ApplicationException("File is not in given task.");
             }
             BlobClient blobClient = _blobContainerClient.GetBlobClient($"Task_{taskId}/{file.Name}");

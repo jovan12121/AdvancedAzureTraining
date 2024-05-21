@@ -1,14 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.Functions;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Data.SqlClient;
 using ProjectTasksFunction.Model;
-using Container = Microsoft.Azure.Cosmos.Container;
 
 namespace ProjectTasksFunction
 {
@@ -21,7 +21,8 @@ namespace ProjectTasksFunction
         private static readonly string containerName = "ProjectTasksContainer";
         private static readonly CosmosClient cosmosClient = new CosmosClient(cosmosConnectionString);
         private static readonly Database database = cosmosClient.GetDatabase(databaseName);
-        private static readonly Container container = database.GetContainer(containerName);
+        private static readonly Microsoft.Azure.Cosmos.Container container = database.GetContainer(containerName);
+
         public DataCopyingFunction(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<DataCopyingFunction>();
@@ -33,7 +34,7 @@ namespace ProjectTasksFunction
             using (SqlConnection connection = new SqlConnection(sqlServerConnectionString))
             {
                 connection.Open();
-                string projectQuery = "SELECT Id, ProjectName, Code FROM Projects";
+                string projectQuery = "SELECT Id, ProjectName, Code, DateStarted, DateFinished, Status FROM Projects";
                 using (SqlCommand projectCommand = new SqlCommand(projectQuery, connection))
                 {
                     using (SqlDataReader projectReader = projectCommand.ExecuteReader())
@@ -45,9 +46,12 @@ namespace ProjectTasksFunction
                                 Id = projectReader.GetInt64(projectReader.GetOrdinal("Id")),
                                 ProjectName = projectReader.GetString(projectReader.GetOrdinal("ProjectName")),
                                 Code = projectReader.GetString(projectReader.GetOrdinal("Code")),
-                                Tasks = new List<Task_>()
+                                DateStarted = projectReader.GetDateTime(projectReader.GetOrdinal("DateStarted")),
+                                DateFinished = projectReader.IsDBNull(projectReader.GetOrdinal("DateFinished")) ? null : (DateTime?)projectReader.GetDateTime(projectReader.GetOrdinal("DateFinished")),
+                                Status = (ProjectStatus)Enum.Parse(typeof(ProjectStatus), projectReader.GetString(projectReader.GetOrdinal("Status"))),
+                                Tasks = new List<Task_>(),
+                                Files = new List<FileAttachment>()
                             };
-                            project.id = project.Id.ToString();
                             projects.Add(project);
                         }
                     }
@@ -55,7 +59,7 @@ namespace ProjectTasksFunction
 
                 foreach (var project in projects)
                 {
-                    string taskQuery = "SELECT Id, TaskName, TaskDescription FROM Tasks WHERE ProjectId = @ProjectId";
+                    string taskQuery = "SELECT Id, TaskName, TaskDescription, DateStarted, DateFinished, Status FROM Tasks WHERE ProjectId = @ProjectId";
                     using (SqlCommand taskCommand = new SqlCommand(taskQuery, connection))
                     {
                         taskCommand.Parameters.AddWithValue("@ProjectId", project.Id);
@@ -68,10 +72,36 @@ namespace ProjectTasksFunction
                                 {
                                     Id = taskReader.GetInt64(taskReader.GetOrdinal("Id")),
                                     TaskName = taskReader.GetString(taskReader.GetOrdinal("TaskName")),
-                                    TaskDescription = taskReader.GetString(taskReader.GetOrdinal("TaskDescription"))
+                                    TaskDescription = taskReader.GetString(taskReader.GetOrdinal("TaskDescription")),
+                                    DateStarted = taskReader.GetDateTime(taskReader.GetOrdinal("DateStarted")),
+                                    DateFinished = taskReader.IsDBNull(taskReader.GetOrdinal("DateFinished")) ? null : (DateTime?)taskReader.GetDateTime(taskReader.GetOrdinal("DateFinished")),
+                                    Status = (TaskStatus_)Enum.Parse(typeof(TaskStatus_), taskReader.GetString(taskReader.GetOrdinal("Status"))),
+                                    ProjectId = project.Id,
+                                    Files = new List<FileAttachment>()
                                 };
-                                task.ProjectId = project.Id;
                                 project.Tasks.Add(task);
+                            }
+                        }
+                    }
+
+                    // Read file attachments for tasks
+                    string fileQuery = "SELECT Id, Name, Path, TaskId FROM FileAttachments WHERE ProjectId = @ProjectId";
+                    using (SqlCommand fileCommand = new SqlCommand(fileQuery, connection))
+                    {
+                        fileCommand.Parameters.AddWithValue("@ProjectId", project.Id);
+
+                        using (SqlDataReader fileReader = fileCommand.ExecuteReader())
+                        {
+                            while (fileReader.Read())
+                            {
+                                FileAttachment fileAttachment = new FileAttachment
+                                {
+                                    Id = fileReader.GetInt64(fileReader.GetOrdinal("Id")),
+                                    Name = fileReader.GetString(fileReader.GetOrdinal("Name")),
+                                    Path = fileReader.GetString(fileReader.GetOrdinal("Path")),
+                                    TaskId = fileReader.GetInt64(fileReader.GetOrdinal("TaskId"))
+                                };
+                                project.Files.Add(fileAttachment);
                             }
                         }
                     }
@@ -79,6 +109,7 @@ namespace ProjectTasksFunction
             }
             return projects;
         }
+
         private async Task CopyDataToCosmosDb(List<Project> projects)
         {
             foreach (var project in projects)
@@ -88,7 +119,7 @@ namespace ProjectTasksFunction
                     var existingItem = await container.ReadItemAsync<Project>(project.Id.ToString(), new PartitionKey(project.Id));
                     if (existingItem != null)
                     {
-                        project.Id = existingItem.Resource.Id; 
+                        project.Id = existingItem.Resource.Id;
                         await container.ReplaceItemAsync(project, project.Id.ToString(), new PartitionKey(project.Id));
                     }
                     else
@@ -96,7 +127,7 @@ namespace ProjectTasksFunction
                         await container.CreateItemAsync(project);
                     }
                 }
-                catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
                 {
                     await container.CreateItemAsync(project);
                 }
@@ -127,7 +158,6 @@ namespace ProjectTasksFunction
             }
         }
 
-
         [Function("DataCopyingFunction")]
         public async Task RunAsync([TimerTrigger("0 */5 * * * *")] MyInfo myTimer)
         {
@@ -139,9 +169,10 @@ namespace ProjectTasksFunction
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error  occurred while copying data to Cosmos DB:" + ex.Message);
+                _logger.LogError(ex, "An error occurred while copying data to Cosmos DB:" + ex.Message);
             }
         }
+
         public class MyInfo
         {
             public MyScheduleStatus ScheduleStatus { get; set; }

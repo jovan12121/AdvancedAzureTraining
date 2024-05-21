@@ -8,9 +8,11 @@ namespace ProjectTasks.Repository
     public class ProjectTaskRepository : IProjectTaskRepository
     {
         private DatabaseContext _databaseContext;
-        public ProjectTaskRepository(DatabaseContext databaseContext) 
+        private readonly IRabbitMQMessagingService _rabbitMQMessagingService;
+        public ProjectTaskRepository(DatabaseContext databaseContext, IRabbitMQMessagingService rabbitMQMessagingService)
         {
             _databaseContext = databaseContext;
+            _rabbitMQMessagingService = rabbitMQMessagingService;
         }
         public async Task<Task_> AddTaskAsync(Task_ task)
         {
@@ -23,6 +25,7 @@ namespace ProjectTasks.Repository
             Task_ taskToDelete = _databaseContext.Tasks.FirstOrDefault(t=>t.Id == taskId);
             if (taskToDelete == null)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: Task not found.");
                 throw new ApplicationException("Task not found.");
             }
             _databaseContext.Tasks.Remove(taskToDelete);
@@ -39,6 +42,7 @@ namespace ProjectTasks.Repository
             Task_ retVal = await _databaseContext.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
             if(retVal == null)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: Task not found.");
                 throw new ApplicationException("Task not found");
             }
             return retVal;
@@ -56,6 +60,7 @@ namespace ProjectTasks.Repository
             Project projectToDelete = await _databaseContext.Projects.FirstOrDefaultAsync(p=>p.Id == projectId);
             if (projectToDelete == null)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: Task not found.");
                 throw new ApplicationException("Project not found.");
             }
             _databaseContext.Projects.Remove(projectToDelete);
@@ -73,6 +78,7 @@ namespace ProjectTasks.Repository
             Project retVal = await _databaseContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if(retVal == null)
             {
+                _rabbitMQMessagingService.PublishMessage("Error occured: Project not found.");
                 throw new ApplicationException("Project not found.");
             }
             return retVal;
