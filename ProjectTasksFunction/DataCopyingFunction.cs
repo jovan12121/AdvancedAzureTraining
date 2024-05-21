@@ -48,7 +48,7 @@ namespace ProjectTasksFunction
                                 Code = projectReader.GetString(projectReader.GetOrdinal("Code")),
                                 DateStarted = projectReader.GetDateTime(projectReader.GetOrdinal("DateStarted")),
                                 DateFinished = projectReader.IsDBNull(projectReader.GetOrdinal("DateFinished")) ? null : (DateTime?)projectReader.GetDateTime(projectReader.GetOrdinal("DateFinished")),
-                                Status = (ProjectStatus)Enum.Parse(typeof(ProjectStatus), projectReader.GetString(projectReader.GetOrdinal("Status"))),
+                                Status = projectReader.GetInt32(projectReader.GetOrdinal("Status")),
                                 Tasks = new List<Task_>(),
                                 Files = new List<FileAttachment>()
                             };
@@ -75,7 +75,7 @@ namespace ProjectTasksFunction
                                     TaskDescription = taskReader.GetString(taskReader.GetOrdinal("TaskDescription")),
                                     DateStarted = taskReader.GetDateTime(taskReader.GetOrdinal("DateStarted")),
                                     DateFinished = taskReader.IsDBNull(taskReader.GetOrdinal("DateFinished")) ? null : (DateTime?)taskReader.GetDateTime(taskReader.GetOrdinal("DateFinished")),
-                                    Status = (TaskStatus_)Enum.Parse(typeof(TaskStatus_), taskReader.GetString(taskReader.GetOrdinal("Status"))),
+                                    Status = taskReader.GetInt32(taskReader.GetOrdinal("Status")),
                                     ProjectId = project.Id,
                                     Files = new List<FileAttachment>()
                                 };
@@ -83,8 +83,6 @@ namespace ProjectTasksFunction
                             }
                         }
                     }
-
-                    // Read file attachments for tasks
                     string fileQuery = "SELECT Id, Name, Path, TaskId FROM FileAttachments WHERE ProjectId = @ProjectId";
                     using (SqlCommand fileCommand = new SqlCommand(fileQuery, connection))
                     {
