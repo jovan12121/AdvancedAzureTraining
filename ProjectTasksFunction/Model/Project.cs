@@ -21,7 +21,7 @@ namespace ProjectTasksFunction.Model
         public DateTime DateStarted { get; set; }
         public DateTime? DateFinished { get; set; }
 
-        public ProjectStatus Status { get; set; }
+        public int Status { get; set; }
         public List<Task_> Tasks { get; set; }
         public List<FileAttachment> Files { get; set; }
     }
