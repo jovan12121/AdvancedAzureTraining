@@ -15,6 +15,7 @@ namespace ProjectTasksFunction.Model
     }
     public class Project
     {
+        public string id { get; set; }
         public long Id { get; set; }
         public string ProjectName { get; set; }
         public string Code { get; set; }

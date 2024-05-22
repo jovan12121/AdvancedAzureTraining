@@ -9,9 +9,11 @@ namespace ProjectTaskCosmos.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectsService _projectsService;
-        public ProjectsController(IProjectsService projectsService) 
+        private readonly IFilesService _filesService;
+        public ProjectsController(IProjectsService projectsService, IFilesService filesService)
         {
             _projectsService = projectsService;
+            _filesService = filesService;
         }
         [HttpGet("getProjects")]
         public async Task<IActionResult> GetAllProjects()
@@ -31,6 +33,30 @@ namespace ProjectTaskCosmos.Controllers
             try
             {
                 return Ok(await _projectsService.GetProjectAsync(id));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        [HttpGet("getFilesFromProject/{id}")]
+        public async Task<IActionResult> GetFilesFromProject(long id)
+        {
+            try
+            {
+                return Ok(await _filesService.DownloadFilesFromProjectAsync(id));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        [HttpGet("getFilesFromTask/{id}")]
+        public async Task<IActionResult> GetFilesFromTask(long id)
+        {
+            try
+            {
+                return Ok(await _filesService.DownloadFilesFromTaskAsync(id));
             }
             catch (Exception e)
             {

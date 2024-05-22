@@ -9,6 +9,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Data.SqlClient;
 using ProjectTasksFunction.Model;
+using Newtonsoft.Json;
 
 namespace ProjectTasksFunction
 {
@@ -52,6 +53,7 @@ namespace ProjectTasksFunction
                                 Tasks = new List<Task_>(),
                                 Files = new List<FileAttachment>()
                             };
+                            project.id = project.Id.ToString();
                             projects.Add(project);
                         }
                     }
@@ -59,7 +61,7 @@ namespace ProjectTasksFunction
 
                 foreach (var project in projects)
                 {
-                    string taskQuery = "SELECT Id, TaskName, TaskDescription, DateStarted, DateFinished, Status FROM Tasks WHERE ProjectId = @ProjectId";
+                    string taskQuery = "SELECT Id, TaskName, TaskDescription, DateStarted, DateFinished, Status, MetaData FROM Tasks WHERE ProjectId = @ProjectId";
                     using (SqlCommand taskCommand = new SqlCommand(taskQuery, connection))
                     {
                         taskCommand.Parameters.AddWithValue("@ProjectId", project.Id);
@@ -68,6 +70,8 @@ namespace ProjectTasksFunction
                         {
                             while (taskReader.Read())
                             {
+                                var metaDataJson = taskReader.IsDBNull(taskReader.GetOrdinal("MetaData")) ? null : taskReader.GetString(taskReader.GetOrdinal("MetaData"));
+                                Dictionary<string, string> metaData = string.IsNullOrEmpty(metaDataJson) ? new Dictionary<string, string>() :  JsonConvert.DeserializeObject<Dictionary<string, string>>(metaDataJson); 
                                 Task_ task = new Task_
                                 {
                                     Id = taskReader.GetInt64(taskReader.GetOrdinal("Id")),
@@ -77,13 +81,38 @@ namespace ProjectTasksFunction
                                     DateFinished = taskReader.IsDBNull(taskReader.GetOrdinal("DateFinished")) ? null : (DateTime?)taskReader.GetDateTime(taskReader.GetOrdinal("DateFinished")),
                                     Status = taskReader.GetInt32(taskReader.GetOrdinal("Status")),
                                     ProjectId = project.Id,
-                                    Files = new List<FileAttachment>()
+                                    Files = new List<FileAttachment>(),
+                                    MetaData = metaData
                                 };
                                 project.Tasks.Add(task);
                             }
                         }
                     }
-                    string fileQuery = "SELECT Id, Name, Path, TaskId FROM FileAttachments WHERE ProjectId = @ProjectId";
+
+                    foreach (var task in project.Tasks)
+                    {
+                        string taskFileQuery = "SELECT Id, Name, Path FROM Files WHERE TaskId = @TaskId";
+                        using (SqlCommand taskFileCommand = new SqlCommand(taskFileQuery, connection))
+                        {
+                            taskFileCommand.Parameters.AddWithValue("@TaskId", task.Id);
+
+                            using (SqlDataReader taskFileReader = taskFileCommand.ExecuteReader())
+                            {
+                                while (taskFileReader.Read())
+                                {
+                                    FileAttachment fileAttachment = new FileAttachment
+                                    {
+                                        Id = taskFileReader.GetInt64(taskFileReader.GetOrdinal("Id")),
+                                        Name = taskFileReader.GetString(taskFileReader.GetOrdinal("Name")),
+                                        Path = taskFileReader.GetString(taskFileReader.GetOrdinal("Path"))
+                                    };
+                                    task.Files.Add(fileAttachment);
+                                }
+                            }
+                        }
+                    }
+
+                    string fileQuery = "SELECT Id, Name, Path FROM Files WHERE ProjectId = @ProjectId AND TaskId IS NULL";
                     using (SqlCommand fileCommand = new SqlCommand(fileQuery, connection))
                     {
                         fileCommand.Parameters.AddWithValue("@ProjectId", project.Id);
@@ -96,8 +125,7 @@ namespace ProjectTasksFunction
                                 {
                                     Id = fileReader.GetInt64(fileReader.GetOrdinal("Id")),
                                     Name = fileReader.GetString(fileReader.GetOrdinal("Name")),
-                                    Path = fileReader.GetString(fileReader.GetOrdinal("Path")),
-                                    TaskId = fileReader.GetInt64(fileReader.GetOrdinal("TaskId"))
+                                    Path = fileReader.GetString(fileReader.GetOrdinal("Path"))
                                 };
                                 project.Files.Add(fileAttachment);
                             }
@@ -124,6 +152,7 @@ namespace ProjectTasksFunction
                     {
                         await container.CreateItemAsync(project);
                     }
+
                 }
                 catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
                 {

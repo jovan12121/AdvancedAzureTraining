@@ -59,6 +59,25 @@ namespace ProjectTaskCosmos.Services
             }
             throw new Exception("Project with that id doesn't exist!");
         }
+        public async Task<List<FileAttachment>> GetFilesFromProjectAsync(long projectId)
+        {
+            var queryable = container.GetItemLinqQueryable<Project>();
+            using FeedIterator<Project> feed = queryable.Where(p => p.Id == projectId).ToFeedIterator();
+            Project? projectToFind = null;
+            while (feed.HasMoreResults)
+            {
+                var response = await feed.ReadNextAsync();
+                foreach (var project in response)
+                {
+                    if (project.Id == projectId)
+                    {
+                        projectToFind = project;
+                    }
+                }
+            }
+            if (projectToFind == null) throw new Exception("Project not found");
+            return projectToFind.Files;
+        }
 
     }
 }

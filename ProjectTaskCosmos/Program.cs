@@ -13,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IProjectsService, ProjectsService>();
 builder.Services.AddScoped<ITasksService, TasksService>();
+builder.Services.AddScoped<IFilesService, AzureFilesService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
