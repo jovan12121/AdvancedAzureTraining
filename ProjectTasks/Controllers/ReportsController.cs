@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectTasks.Enums;
 using ProjectTasks.Interfaces;
@@ -17,7 +18,6 @@ namespace ProjectTasks.Controllers
             _reportGeneratorService = reportGeneratorService;
             _rabbitMQMessagingService = rabbitMQMessagingService;
         }
-
         [HttpGet("getReportForProjects")]
         public async Task<IActionResult> GetReportForProjects(DateTime? startDate, DateTime? endDate, ProjectStatus? projectStatus)
         {

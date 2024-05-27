@@ -11,6 +11,7 @@ namespace ProjectTaskCosmos.Services
     public class CosmosService
     {
         private readonly CosmosClient _client;
+        static readonly string[] scopeRequiredByApi = new string[] { "ReadAccess" };
         public CosmosService(IConfiguration configuration)
         {
             var keyVaultEndpoint = configuration.GetSection("KeyVault:BaseUrl").Value;

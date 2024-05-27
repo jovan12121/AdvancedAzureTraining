@@ -1,4 +1,6 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Azure.Storage.Blobs;
 using ProjectTasks.Interfaces;
 using ProjectTasks.Model;
 using System.IO.Compression;
@@ -14,8 +16,15 @@ namespace ProjectTasks.Services
         public FilesServiceAzure(IConfiguration configuration, IProjectTaskRepository repository, IRabbitMQMessagingService rabbitMQMessagingService)
         {
             _repository = repository;
-            string connectionString = configuration.GetSection("BlobConnectionString").Value.ToString();
-            string containerName = configuration.GetSection("BlobContainerName").Value.ToString();
+            var keyVaultEndpoint = configuration.GetSection("KeyVault:BaseUrl").Value;
+            var clientId = configuration.GetSection("AzureAd:ClientId").Value;
+            var clientSecret = configuration.GetSection("AzureAd:ClientSecret").Value;
+            var tenantId = configuration.GetSection("AzureAd:TenantId").Value;
+            var secretClient = new SecretClient(new Uri(keyVaultEndpoint), new ClientSecretCredential(tenantId, clientId, clientSecret));
+            var connectionString = secretClient.GetSecret("BlobConnectionString").Value.Value;
+            var containerName = secretClient.GetSecret("BlobContainerName").Value.Value;
+            //string connectionString = configuration.GetSection("BlobConnectionString").Value.ToString();
+            //string containerName = configuration.GetSection("BlobContainerName").Value.ToString();
             _blobContainerClient = new BlobContainerClient(connectionString: connectionString, blobContainerName: containerName);
             _rabbitMQMessagingService = rabbitMQMessagingService;
         }

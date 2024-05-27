@@ -1,4 +1,7 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Azure.Storage.Blobs;
+using Microsoft.Azure.Cosmos;
 using ProjectTaskCosmos.Interfaces;
 using ProjectTaskCosmos.Model;
 using System.IO.Compression;
@@ -11,9 +14,17 @@ namespace ProjectTaskCosmos.Services
         private CosmosService cosmosService;
         public AzureFilesService(IConfiguration configuration)
         {
+            var keyVaultEndpoint = configuration.GetSection("KeyVault:BaseUrl").Value;
+            var clientId = configuration.GetSection("AzureAd:ClientId").Value;
+            var clientSecret = configuration.GetSection("AzureAd:ClientSecret").Value;
+            var tenantId = configuration.GetSection("AzureAd:TenantId").Value;
+            var secretClient = new SecretClient(new Uri(keyVaultEndpoint), new ClientSecretCredential(tenantId, clientId, clientSecret));
+            var connectionString = secretClient.GetSecret("BlobConnectionString").Value.Value;
+            var containerName = secretClient.GetSecret("BlobContainerName").Value.Value;
+
             cosmosService = new CosmosService(configuration);
-            string connectionString = configuration.GetSection("BlobConnectionString").Value.ToString();
-            string containerName = configuration.GetSection("BlobContainerName").Value.ToString();
+            //string connectionString = configuration.GetSection("BlobConnectionString").Value.ToString();
+            //string containerName = configuration.GetSection("BlobContainerName").Value.ToString();
             _blobContainerClient = new BlobContainerClient(connectionString: connectionString, blobContainerName: containerName);
         }
         public async Task<MemoryStream> DownloadFilesFromProjectAsync(long projectId)
