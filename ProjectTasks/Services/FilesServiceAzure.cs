@@ -94,7 +94,7 @@ namespace ProjectTasks.Services
             }
             if (file.TaskId != taskId)
             {
-                rabbitMQMessagingService.PublishMessage("Error occured: File is not in given task.");
+                _rabbitMQMessagingService.PublishMessage("Error occured: File is not in given task.");
                 throw new ApplicationException("File is not in given task.");
             }
             BlobClient blobClient = _blobContainerClient.GetBlobClient($"Task_{taskId}/{file.Name}");
