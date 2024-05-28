@@ -39,7 +39,7 @@ namespace ProjectTasks.Services
         public async Task<FileAttachment> AddFileToTaskAsync(IFormFile file, long taskId)
         {
             if (file == null || file.Length == 0)
-            {
+            { 
                 _messagingService.PublishMessage("Error occured: File is null or empty.");
                 throw new ApplicationException("File is null or empty.");
             }

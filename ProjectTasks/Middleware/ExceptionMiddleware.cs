@@ -22,7 +22,7 @@
             catch (Exception ex)
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                await context.Response.WriteAsync("An internal server error occurred.");
+                await context.Response.WriteAsync($"An internal server error occurred: {ex.Message}");
             }
         }
     }

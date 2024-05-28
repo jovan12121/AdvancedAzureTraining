@@ -23,8 +23,6 @@ namespace ProjectTasks.Services
             var secretClient = new SecretClient(new Uri(keyVaultEndpoint), new ClientSecretCredential(tenantId, clientId, clientSecret));
             var connectionString = secretClient.GetSecret("BlobConnectionString").Value.Value;
             var containerName = secretClient.GetSecret("BlobContainerName").Value.Value;
-            //string connectionString = configuration.GetSection("BlobConnectionString").Value.ToString();
-            //string containerName = configuration.GetSection("BlobContainerName").Value.ToString();
             _blobContainerClient = new BlobContainerClient(connectionString: connectionString, blobContainerName: containerName);
             _rabbitMQMessagingService = rabbitMQMessagingService;
         }
@@ -96,7 +94,7 @@ namespace ProjectTasks.Services
             }
             if (file.TaskId != taskId)
             {
-                _rabbitMQMessagingService.PublishMessage("Error occured: File is not in given task.");
+                rabbitMQMessagingService.PublishMessage("Error occured: File is not in given task.");
                 throw new ApplicationException("File is not in given task.");
             }
             BlobClient blobClient = _blobContainerClient.GetBlobClient($"Task_{taskId}/{file.Name}");

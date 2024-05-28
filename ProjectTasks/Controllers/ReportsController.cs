@@ -11,12 +11,12 @@ namespace ProjectTasks.Controllers
     public class ReportsController : ControllerBase
     {
         private readonly IReportGeneratorService _reportGeneratorService;
-        private readonly IRabbitMQMessagingService _rabbitMQMessagingService;
+        //private readonly IRabbitMQMessagingService _rabbitMQMessagingService;
 
-        public ReportsController(IReportGeneratorService reportGeneratorService, IRabbitMQMessagingService rabbitMQMessagingService)
+        public ReportsController(IReportGeneratorService reportGeneratorService/*, IRabbitMQMessagingService rabbitMQMessagingService*/)
         {
             _reportGeneratorService = reportGeneratorService;
-            _rabbitMQMessagingService = rabbitMQMessagingService;
+            //_rabbitMQMessagingService = rabbitMQMessagingService;
         }
         [HttpGet("getReportForProjects")]
         public async Task<IActionResult> GetReportForProjects(DateTime? startDate, DateTime? endDate, ProjectStatus? projectStatus)
